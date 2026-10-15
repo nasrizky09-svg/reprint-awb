@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Reprint AWB 78x50mm (Pro Native Engine)</title>
+  <title>Reprint AWB 78x50mm (Direct Engine)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Menggunakan Engine Code 128 Lokal yang Identik dengan Aslinya -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -15,7 +14,6 @@
     .input-dark { background-color: #121224; border: 1px solid #d946ef; color: #ffffff; }
     .btn-pink { background: linear-gradient(135deg, #d946ef 0%, #ec4899 100%); }
     
-    /* Layout Kanvas Fisik Murni 78mm x 50mm (576px x 384px) */
     #renderOffscreen {
       position: absolute;
       top: -9999px;
@@ -61,10 +59,11 @@
     <div class="w-10 h-10 rounded-full bg-pink-600 flex items-center justify-center text-white font-bold text-lg">A</div>
     <div>
       <h1 class="text-xl font-bold tracking-wide">Reprint AWB</h1>
-      <p class="text-xs text-emerald-400 font-bold">Pro Native Engine (78x50mm)</p>
+      <p class="text-xs text-emerald-400 font-bold">Direct Print Engine (78x50mm)</p>
     </div>
   </div>
 
+  <!-- FORM INPUT DATA -->
   <div class="card-dark rounded-2xl p-5 mb-6 shadow-xl relative">
     <div class="absolute -right-3 top-10 bg-emerald-500 text-black font-extrabold text-[10px] px-2 py-3 rounded-l-md cursor-pointer text-center" onclick="ambilDataSheet()">AMBIL<br>DATA</div>
     <div class="space-y-4">
@@ -88,9 +87,12 @@
     </div>
   </div>
 
+  <!-- PREVIEW LAYAR & PANEL CETAK LANGSUNG (TANPA POPUP) -->
   <div class="card-dark rounded-2xl p-5 mb-6">
-    <h2 class="text-xs font-semibold text-gray-400 uppercase mb-3">Preview Layar</h2>
-    <div id="previewWrapper" class="flex justify-center hidden">
+    <h2 class="text-xs font-semibold text-gray-400 uppercase mb-3">Preview & Panel Cetak</h2>
+    
+    <div id="previewWrapper" class="flex flex-col gap-4 hidden">
+      <!-- TAMPILAN LABEL -->
       <div class="bg-white text-black p-3 rounded-lg w-full flex flex-col justify-between border border-gray-300">
         <div class="flex justify-between items-center border-b-2 border-black pb-1">
           <span class="font-black text-lg text-pink-600">anteraja</span>
@@ -105,39 +107,29 @@
         </div>
         <div id="dispAlamatUI" class="border-t-2 border-black pt-1 text-[10px] font-bold uppercase text-center truncate"></div>
       </div>
-    </div>
-    <div id="labelPlaceholder" class="text-center py-8 text-gray-500 text-xs italic">Isi data di atas untuk melihat preview</div>
-    <button id="btnBukaCetak" onclick="bukaHalamanCetak()" class="w-full bg-transparent border border-pink-500 text-pink-400 font-bold py-3 rounded-xl mt-4 text-sm hidden">Buka Panel Cetak &rarr;</button>
-  </div>
 
-  <!-- PANEL CETAK BLUETOOTH -->
-  <div id="modalCetak" class="fixed inset-0 bg-black/90 z-50 p-4 overflow-y-auto hidden flex flex-col items-center justify-start">
-    <div class="w-full max-w-md bg-white text-black rounded-2xl p-4 mt-4 mb-20">
-      <h3 class="text-center font-bold text-sm text-gray-700 mb-3 uppercase">Cetak Ke SNBC BTP-P33</h3>
-      
-      <div class="bg-gray-100 rounded-xl p-3 mb-3 text-center border border-gray-200">
-        <p id="btStatus" class="text-xs font-bold text-gray-600">Belum Terhubung</p>
-        <div id="progressBox" class="hidden mt-2">
-          <div class="w-full bg-gray-300 h-2 rounded-full overflow-hidden">
+      <!-- KONTROL BLUETOOTH PRINTER INTEGRATED -->
+      <div class="bg-gray-900/90 rounded-xl p-4 border border-gray-700 space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <span id="btStatus" class="text-xs font-bold text-gray-400 truncate">Status: Belum Terhubung</span>
+          <button onclick="connectBluetooth()" class="bg-purple-600 text-white font-bold py-2 px-3 rounded-xl text-xs hover:bg-purple-700 shrink-0">Sambungkan Printer</button>
+        </div>
+
+        <div id="progressBox" class="hidden">
+          <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
             <div id="progressBar" class="bg-emerald-500 h-full w-0 transition-all duration-200"></div>
           </div>
-          <p id="progressText" class="text-[10px] font-bold text-gray-500 mt-1">Mencetak... 0%</p>
+          <p id="progressText" class="text-[10px] font-bold text-gray-400 mt-1 text-center">Mencetak... 0%</p>
         </div>
-      </div>
 
-      <div class="grid grid-cols-2 gap-2 mb-3">
-        <button onclick="connectBluetooth()" class="bg-gray-900 text-white font-bold py-2.5 px-2 rounded-xl text-xs hover:bg-black">Sambungkan Printer</button>
-        <button onclick="startScanModal()" class="bg-gray-900 text-white font-bold py-2.5 px-2 rounded-xl text-xs hover:bg-black">Scan Kamera</button>
+        <button id="btnCetakModal" onclick="kirimKePrinter()" class="w-full btn-pink text-white font-black py-3.5 rounded-xl text-sm shadow-md">⚡ CETAK LABEL</button>
       </div>
-      <div id="readerModal" class="hidden rounded-xl overflow-hidden shadow-lg border border-pink-500 mb-3"></div>
-      
-      <button id="btnCetakModal" onclick="kirimKePrinter()" class="w-full btn-pink text-white font-black py-3.5 rounded-xl text-sm shadow-md mb-2">⚡ CETAK STABIL PRO</button>
-      <button onclick="tutupHalamanCetak()" class="w-full bg-gray-200 text-gray-700 font-bold py-2 rounded-xl text-xs">Tutup Panel</button>
     </div>
+
+    <div id="labelPlaceholder" class="text-center py-8 text-gray-500 text-xs italic">Isi data di atas lalu klik "Buat Preview Label"</div>
   </div>
 
   <script>
-    // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT KAMU DI SINI
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwN8q2b4UUasHN9fpc3w6hYxSVN1rJTF_3ZnIkNRLVW8skNo3t8g-o1pTAc7gew6mRF/exec";
 
     let currentData = {};
@@ -164,21 +156,15 @@
 
       document.getElementById('labelPlaceholder').classList.add('hidden');
       document.getElementById('previewWrapper').classList.remove('hidden');
-      document.getElementById('btnBukaCetak').classList.remove('hidden');
     }
 
-    function bukaHalamanCetak() {
-      if (!currentData.resi) return;
-      document.getElementById('modalCetak').classList.remove('hidden');
+    function startScanMain() { 
+      startScanner('readerMain', (t) => { 
+        document.getElementById('noResi').value = t; 
+        stopScan(); 
+        ambilDataSheetWithResi(t);
+      }); 
     }
-
-    function tutupHalamanCetak() {
-      stopScan();
-      document.getElementById('modalCetak').classList.add('hidden');
-    }
-
-    function startScanMain() { startScanner('readerMain', (t) => { document.getElementById('noResi').value = t; stopScan(); }); }
-    function startScanModal() { startScanner('readerModal', (t) => { stopScan(); document.getElementById('noResi').value = t; ambilDataSheetWithResi(t); }); }
 
     function startScanner(elementId, onSuccess) {
       document.getElementById(elementId).classList.remove('hidden');
@@ -210,11 +196,11 @@
         }
         if (printCharacteristic) {
           btStatus.innerText = 'Terhubung: ' + (printDevice.name || 'Printer');
-          btStatus.className = 'text-xs font-bold text-green-600';
+          btStatus.className = 'text-xs font-bold text-green-400 truncate';
         } else throw new Error('Karakteristik tidak ditemukan.');
       } catch (err) {
-        btStatus.innerText = 'Gagal Konek: ' + err.message;
-        btStatus.className = 'text-xs font-bold text-red-500';
+        btStatus.innerText = 'Gagal: ' + err.message;
+        btStatus.className = 'text-xs font-bold text-red-400 truncate';
       }
     }
 
@@ -224,9 +210,9 @@
       const progressBar = document.getElementById('progressBar');
       const progressText = document.getElementById('progressText');
 
-      if (!printCharacteristic) return alert('Printer belum terhubung!');
+      if (!printCharacteristic) return alert('Printer belum terhubung! Silakan klik Sambungkan Printer.');
       progressBox.classList.remove('hidden');
-      btStatus.innerText = 'Merender Label Pro...';
+      btStatus.innerText = 'Merender Label...';
 
       try {
         const element = document.getElementById('renderOffscreen');
@@ -236,7 +222,6 @@
 
         btStatus.innerText = 'Mencetak...';
         
-        // Chunking stabil 64 byte khusus printer SNBC
         const chunkSize = 64; 
         
         for (let i = 0; i < escpos.length; i += chunkSize) {
@@ -256,7 +241,7 @@
         }
         
         btStatus.innerText = 'Berhasil dicetak ✓';
-        btStatus.className = 'text-xs font-bold text-green-600';
+        btStatus.className = 'text-xs font-bold text-green-400 truncate';
         setTimeout(() => { progressBox.classList.add('hidden'); }, 2000);
       } catch (err) {
         alert('Gagal Mencetak: ' + err.message);
