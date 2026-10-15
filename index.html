@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Reprint AWB 78x50mm (GitHub Pages)</title>
+  <title>Reprint AWB 78x50mm (Pro Native Engine)</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Menggunakan Engine Code 128 Lokal yang Identik dengan Aslinya -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -14,6 +15,7 @@
     .input-dark { background-color: #121224; border: 1px solid #d946ef; color: #ffffff; }
     .btn-pink { background: linear-gradient(135deg, #d946ef 0%, #ec4899 100%); }
     
+    /* Layout Kanvas Fisik Murni 78mm x 50mm (576px x 384px) */
     #renderOffscreen {
       position: absolute;
       top: -9999px;
@@ -32,7 +34,7 @@
 </head>
 <body class="min-h-screen p-4 max-w-md mx-auto relative pb-20">
 
-  <!-- TEMPLATE CETAK (OFFSCREEN) -->
+  <!-- RENDER AREA KHUSUS PRINTER -->
   <div id="renderOffscreen">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 6px;">
       <div style="display: flex; align-items: center; gap: 8px;">
@@ -54,16 +56,15 @@
     <div id="offAlamat" style="border-top: 4px solid #000; padding-top: 4px; font-size: 13px; font-weight: bold; text-transform: uppercase; text-align: center; word-break: break-word; line-height: 1.1;"></div>
   </div>
 
-  <!-- HEADER APPS -->
+  <!-- TAMPILAN UTAMA HP -->
   <div class="flex items-center gap-3 mb-6">
     <div class="w-10 h-10 rounded-full bg-pink-600 flex items-center justify-center text-white font-bold text-lg">A</div>
     <div>
       <h1 class="text-xl font-bold tracking-wide">Reprint AWB</h1>
-      <p class="text-xs text-emerald-400 font-bold">GitHub Pages + Apps Script API</p>
+      <p class="text-xs text-emerald-400 font-bold">Pro Native Engine (78x50mm)</p>
     </div>
   </div>
 
-  <!-- FORM INPUT -->
   <div class="card-dark rounded-2xl p-5 mb-6 shadow-xl relative">
     <div class="absolute -right-3 top-10 bg-emerald-500 text-black font-extrabold text-[10px] px-2 py-3 rounded-l-md cursor-pointer text-center" onclick="ambilDataSheet()">AMBIL<br>DATA</div>
     <div class="space-y-4">
@@ -87,7 +88,6 @@
     </div>
   </div>
 
-  <!-- PREVIEW -->
   <div class="card-dark rounded-2xl p-5 mb-6">
     <h2 class="text-xs font-semibold text-gray-400 uppercase mb-3">Preview Layar</h2>
     <div id="previewWrapper" class="flex justify-center hidden">
@@ -131,13 +131,13 @@
       </div>
       <div id="readerModal" class="hidden rounded-xl overflow-hidden shadow-lg border border-pink-500 mb-3"></div>
       
-      <button id="btnCetakModal" onclick="kirimKePrinter()" class="w-full btn-pink text-white font-black py-3.5 rounded-xl text-sm shadow-md mb-2">CETAK LABEL</button>
+      <button id="btnCetakModal" onclick="kirimKePrinter()" class="w-full btn-pink text-white font-black py-3.5 rounded-xl text-sm shadow-md mb-2">⚡ CETAK STABIL PRO</button>
       <button onclick="tutupHalamanCetak()" class="w-full bg-gray-200 text-gray-700 font-bold py-2 rounded-xl text-xs">Tutup Panel</button>
     </div>
   </div>
 
   <script>
-    // PASTAKAN URL DEPLOYMENT GOOGLE APPS SCRIPT KAMU DI SINI:
+    // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT KAMU DI SINI
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwN8q2b4UUasHN9fpc3w6hYxSVN1rJTF_3ZnIkNRLVW8skNo3t8g-o1pTAc7gew6mRF/exec";
 
     let currentData = {};
@@ -190,29 +190,6 @@
       if (html5QrcodeScanner) html5QrcodeScanner.stop().then(() => { document.querySelectorAll('[id^="reader"]').forEach(el => el.classList.add('hidden')); }).catch(e=>{});
     }
 
-    // FUNGSI FETCH UNTUK GITHUB PAGES (MENGGANTIKAN google.script.run)
-    function ambilDataSheet() {
-      const resi = document.getElementById('noResi').value.trim();
-      if (!resi) return alert('Ketik nomor resi terlebih dahulu!');
-      ambilDataSheetWithResi(resi);
-    }
-    
-    async function ambilDataSheetWithResi(nomorResi) {
-      try {
-        const response = await fetch(GAS_WEB_APP_URL + "?resi=" + encodeURIComponent(nomorResi));
-        const res = await response.json();
-        if (res.success) { 
-          document.getElementById('kodeUz').value = res.kodeUz; 
-          document.getElementById('alamat').value = res.alamat; 
-          generatePreview(); 
-        } else {
-          alert(res.message);
-        }
-      } catch (err) {
-        alert("Gagal mengambil data dari Google Sheets: " + err.message);
-      }
-    }
-
     async function connectBluetooth() {
       const btStatus = document.getElementById('btStatus');
       btStatus.innerText = 'Mencari printer...';
@@ -249,27 +226,33 @@
 
       if (!printCharacteristic) return alert('Printer belum terhubung!');
       progressBox.classList.remove('hidden');
-      btStatus.innerText = 'Merender Gambar...';
+      btStatus.innerText = 'Merender Label Pro...';
 
       try {
         const element = document.getElementById('renderOffscreen');
         const canvas = await html2canvas(element, { scale: 1.0, width: 576, height: 384, backgroundColor: '#ffffff' });
+        
         const escpos = await rasterizeToGSv0_Optimized(canvas);
 
         btStatus.innerText = 'Mencetak...';
-        const chunkSize = 180; 
+        
+        // Chunking stabil 64 byte khusus printer SNBC
+        const chunkSize = 64; 
         
         for (let i = 0; i < escpos.length; i += chunkSize) {
           const chunk = escpos.slice(i, i + chunkSize);
-          if (printCharacteristic.properties.writeWithoutResponse) {
-            await printCharacteristic.writeValueWithoutResponse(chunk);
-          } else {
+          
+          if (printCharacteristic.properties.write) {
             await printCharacteristic.writeValue(chunk);
+          } else {
+            await printCharacteristic.writeValueWithoutResponse(chunk);
           }
+          
           let percent = Math.min(100, Math.round(((i + chunkSize) / escpos.length) * 100));
           progressBar.style.width = percent + '%';
           progressText.innerText = 'Mencetak... ' + percent + '%';
-          await new Promise(r => setTimeout(r, 12));
+          
+          await new Promise(r => setTimeout(r, 25));
         }
         
         btStatus.innerText = 'Berhasil dicetak ✓';
@@ -313,6 +296,28 @@
       }
       bytes.push(0x0A, 0x0A, 0x0A);
       return new Uint8Array(bytes);
+    }
+
+    function ambilDataSheet() {
+      const resi = document.getElementById('noResi').value.trim();
+      if (!resi) return alert('Ketik nomor resi terlebih dahulu!');
+      ambilDataSheetWithResi(resi);
+    }
+    
+    async function ambilDataSheetWithResi(nomorResi) {
+      try {
+        const response = await fetch(GAS_WEB_APP_URL + "?resi=" + encodeURIComponent(nomorResi));
+        const res = await response.json();
+        if (res.success) { 
+          document.getElementById('kodeUz').value = res.kodeUz; 
+          document.getElementById('alamat').value = res.alamat; 
+          generatePreview(); 
+        } else {
+          alert(res.message);
+        }
+      } catch (err) {
+        alert("Gagal mengambil data dari Google Sheets: " + err.message);
+      }
     }
   </script>
 </body>
