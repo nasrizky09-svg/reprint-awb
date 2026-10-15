@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Reprint AWB 78x50mm (GitHub Pages)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body { background-color: #0f0f1a; color: #ffffff; font-family: -apple-system, sans-serif; }
+    .card-dark { background-color: #1a1a2e; border: 1px solid #2a2a4a; }
+    .input-dark { background-color: #121224; border: 1px solid #d946ef; color: #ffffff; }
+    .btn-pink { background: linear-gradient(135deg, #d946ef 0%, #ec4899 100%); }
+    
+    #renderOffscreen {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: 576px !important;
+      height: 384px !important;
+      background-color: #ffffff;
+      color: #000000;
+      box-sizing: border-box;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 max-w-md mx-auto relative pb-20">
+
+  <!-- TEMPLATE CETAK (OFFSCREEN) -->
+  <div id="renderOffscreen">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 6px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="width: 22px; height: 22px; border-radius: 50%; background-color: #d946ef;"></div>
+        <span style="font-weight: 900; font-size: 26px; color: #d946ef;">anteraja</span>
+      </div>
+      <span style="font-size: 15px; font-family: monospace; font-weight: bold; color: #000;">☎ 021-5066 3333</span>
+    </div>
+
+    <div style="text-align: center; display: flex; flex-direction: column; align-items: center; margin: 2px 0;">
+      <svg id="barcodeCanvasOffscreen" style="max-width: 100%;"></svg>
+      <div id="offResi" style="font-size: 16px; font-weight: bold; font-family: monospace; margin-top: 2px;"></div>
+    </div>
+
+    <div style="text-align: center;">
+      <div id="offKodeUz" style="font-size: 58px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; line-height: 1;"></div>
+    </div>
+
+    <div id="offAlamat" style="border-top: 4px solid #000; padding-top: 4px; font-size: 13px; font-weight: bold; text-transform: uppercase; text-align: center; word-break: break-word; line-height: 1.1;"></div>
+  </div>
+
+  <!-- HEADER APPS -->
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-full bg-pink-600 flex items-center justify-center text-white font-bold text-lg">A</div>
+    <div>
+      <h1 class="text-xl font-bold tracking-wide">Reprint AWB</h1>
+      <p class="text-xs text-emerald-400 font-bold">GitHub Pages + Apps Script API</p>
+    </div>
+  </div>
+
+  <!-- FORM INPUT -->
+  <div class="card-dark rounded-2xl p-5 mb-6 shadow-xl relative">
+    <div class="absolute -right-3 top-10 bg-emerald-500 text-black font-extrabold text-[10px] px-2 py-3 rounded-l-md cursor-pointer text-center" onclick="ambilDataSheet()">AMBIL<br>DATA</div>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Nomor Resi (AWB)</label>
+        <div class="flex gap-2">
+          <input type="text" id="noResi" placeholder="Scan / ketik resi..." class="w-full input-dark rounded-xl px-4 py-3 text-sm font-mono">
+          <button onclick="startScanMain()" class="bg-purple-600 text-white px-4 rounded-xl text-xs font-bold hover:bg-purple-700">SCAN</button>
+        </div>
+      </div>
+      <div id="readerMain" class="hidden rounded-xl overflow-hidden shadow-lg border border-pink-500"></div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Kode UZ</label>
+        <input type="text" id="kodeUz" placeholder="KKS" class="w-full input-dark rounded-xl px-4 py-3 text-sm font-bold uppercase">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Alamat Tujuan</label>
+        <textarea id="alamat" rows="3" placeholder="Nama penerima..." class="w-full input-dark rounded-xl px-4 py-3 text-sm"></textarea>
+      </div>
+      <button onclick="generatePreview()" class="w-full btn-pink text-white font-bold py-3.5 rounded-xl text-sm">Buat Preview Label</button>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="card-dark rounded-2xl p-5 mb-6">
+    <h2 class="text-xs font-semibold text-gray-400 uppercase mb-3">Preview Layar</h2>
+    <div id="previewWrapper" class="flex justify-center hidden">
+      <div class="bg-white text-black p-3 rounded-lg w-full flex flex-col justify-between border border-gray-300">
+        <div class="flex justify-between items-center border-b-2 border-black pb-1">
+          <span class="font-black text-lg text-pink-600">anteraja</span>
+          <span class="text-xs font-mono font-bold">021-5066 3333</span>
+        </div>
+        <div class="text-center my-2">
+          <svg id="barcodeCanvasUI" class="max-w-full mx-auto"></svg>
+          <div id="dispResiUI" class="text-xs font-bold font-mono"></div>
+        </div>
+        <div class="text-center">
+          <div id="dispKodeUzUI" class="text-3xl font-black uppercase"></div>
+        </div>
+        <div id="dispAlamatUI" class="border-t-2 border-black pt-1 text-[10px] font-bold uppercase text-center truncate"></div>
+      </div>
+    </div>
+    <div id="labelPlaceholder" class="text-center py-8 text-gray-500 text-xs italic">Isi data di atas untuk melihat preview</div>
+    <button id="btnBukaCetak" onclick="bukaHalamanCetak()" class="w-full bg-transparent border border-pink-500 text-pink-400 font-bold py-3 rounded-xl mt-4 text-sm hidden">Buka Panel Cetak &rarr;</button>
+  </div>
+
+  <!-- PANEL CETAK BLUETOOTH -->
+  <div id="modalCetak" class="fixed inset-0 bg-black/90 z-50 p-4 overflow-y-auto hidden flex flex-col items-center justify-start">
+    <div class="w-full max-w-md bg-white text-black rounded-2xl p-4 mt-4 mb-20">
+      <h3 class="text-center font-bold text-sm text-gray-700 mb-3 uppercase">Cetak Ke SNBC BTP-P33</h3>
+      
+      <div class="bg-gray-100 rounded-xl p-3 mb-3 text-center border border-gray-200">
+        <p id="btStatus" class="text-xs font-bold text-gray-600">Belum Terhubung</p>
+        <div id="progressBox" class="hidden mt-2">
+          <div class="w-full bg-gray-300 h-2 rounded-full overflow-hidden">
+            <div id="progressBar" class="bg-emerald-500 h-full w-0 transition-all duration-200"></div>
+          </div>
+          <p id="progressText" class="text-[10px] font-bold text-gray-500 mt-1">Mencetak... 0%</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <button onclick="connectBluetooth()" class="bg-gray-900 text-white font-bold py-2.5 px-2 rounded-xl text-xs hover:bg-black">Sambungkan Printer</button>
+        <button onclick="startScanModal()" class="bg-gray-900 text-white font-bold py-2.5 px-2 rounded-xl text-xs hover:bg-black">Scan Kamera</button>
+      </div>
+      <div id="readerModal" class="hidden rounded-xl overflow-hidden shadow-lg border border-pink-500 mb-3"></div>
+      
+      <button id="btnCetakModal" onclick="kirimKePrinter()" class="w-full btn-pink text-white font-black py-3.5 rounded-xl text-sm shadow-md mb-2">CETAK LABEL</button>
+      <button onclick="tutupHalamanCetak()" class="w-full bg-gray-200 text-gray-700 font-bold py-2 rounded-xl text-xs">Tutup Panel</button>
+    </div>
+  </div>
+
+  <script>
+    // PASTAKAN URL DEPLOYMENT GOOGLE APPS SCRIPT KAMU DI SINI:
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwN8q2b4UUasHN9fpc3w6hYxSVN1rJTF_3ZnIkNRLVW8skNo3t8g-o1pTAc7gew6mRF/exec";
+
+    let currentData = {};
+    let printDevice = null;
+    let printCharacteristic = null;
+    let html5QrcodeScanner = null;
+
+    function generatePreview() {
+      const resi = document.getElementById('noResi').value.trim();
+      const uz = document.getElementById('kodeUz').value.trim();
+      const alamat = document.getElementById('alamat').value.trim();
+      if (!resi) return alert('Mohon isi Nomor Resi terlebih dahulu!');
+      currentData = { resi, uz, alamat };
+
+      document.getElementById('dispResiUI').innerText = resi;
+      document.getElementById('dispKodeUzUI').innerText = uz || '---';
+      document.getElementById('dispAlamatUI').innerText = alamat || 'Alamat Belum Diisi';
+      try { JsBarcode("#barcodeCanvasUI", resi, { format: "CODE128", width: 1.8, height: 45, displayValue: false, margin: 0 }); } catch(e) {}
+
+      document.getElementById('offResi').innerText = 'Nomor Resi ' + resi;
+      document.getElementById('offKodeUz').innerText = uz || '---';
+      document.getElementById('offAlamat').innerText = alamat || 'ALAMAT BELUM DIISI';
+      try { JsBarcode("#barcodeCanvasOffscreen", resi, { format: "CODE128", width: 3.0, height: 70, displayValue: false, margin: 0 }); } catch(e) {}
+
+      document.getElementById('labelPlaceholder').classList.add('hidden');
+      document.getElementById('previewWrapper').classList.remove('hidden');
+      document.getElementById('btnBukaCetak').classList.remove('hidden');
+    }
+
+    function bukaHalamanCetak() {
+      if (!currentData.resi) return;
+      document.getElementById('modalCetak').classList.remove('hidden');
+    }
+
+    function tutupHalamanCetak() {
+      stopScan();
+      document.getElementById('modalCetak').classList.add('hidden');
+    }
+
+    function startScanMain() { startScanner('readerMain', (t) => { document.getElementById('noResi').value = t; stopScan(); }); }
+    function startScanModal() { startScanner('readerModal', (t) => { stopScan(); document.getElementById('noResi').value = t; ambilDataSheetWithResi(t); }); }
+
+    function startScanner(elementId, onSuccess) {
+      document.getElementById(elementId).classList.remove('hidden');
+      html5QrcodeScanner = new Html5Qrcode(elementId);
+      html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 100 } }, onSuccess, () => {}).catch(err => alert("Gagal buka kamera: " + err));
+    }
+
+    function stopScan() {
+      if (html5QrcodeScanner) html5QrcodeScanner.stop().then(() => { document.querySelectorAll('[id^="reader"]').forEach(el => el.classList.add('hidden')); }).catch(e=>{});
+    }
+
+    // FUNGSI FETCH UNTUK GITHUB PAGES (MENGGANTIKAN google.script.run)
+    function ambilDataSheet() {
+      const resi = document.getElementById('noResi').value.trim();
+      if (!resi) return alert('Ketik nomor resi terlebih dahulu!');
+      ambilDataSheetWithResi(resi);
+    }
+    
+    async function ambilDataSheetWithResi(nomorResi) {
+      try {
+        const response = await fetch(GAS_WEB_APP_URL + "?resi=" + encodeURIComponent(nomorResi));
+        const res = await response.json();
+        if (res.success) { 
+          document.getElementById('kodeUz').value = res.kodeUz; 
+          document.getElementById('alamat').value = res.alamat; 
+          generatePreview(); 
+        } else {
+          alert(res.message);
+        }
+      } catch (err) {
+        alert("Gagal mengambil data dari Google Sheets: " + err.message);
+      }
+    }
+
+    async function connectBluetooth() {
+      const btStatus = document.getElementById('btStatus');
+      btStatus.innerText = 'Mencari printer...';
+      try {
+        printDevice = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', '0000ff00-0000-1000-8000-00805f9b34fb', '49535343-fe7d-4ae5-8fa9-9fafd205e455', '0000e025-0000-1000-8000-00805f9b34fb']
+        });
+        btStatus.innerText = 'Menghubungkan...';
+        const server = await printDevice.gatt.connect();
+        const services = await server.getPrimaryServices();
+        for (let service of services) {
+          const characteristics = await service.getCharacteristics();
+          for (let c of characteristics) {
+            if (c.properties.write || c.properties.writeWithoutResponse) { printCharacteristic = c; break; }
+          }
+          if (printCharacteristic) break;
+        }
+        if (printCharacteristic) {
+          btStatus.innerText = 'Terhubung: ' + (printDevice.name || 'Printer');
+          btStatus.className = 'text-xs font-bold text-green-600';
+        } else throw new Error('Karakteristik tidak ditemukan.');
+      } catch (err) {
+        btStatus.innerText = 'Gagal Konek: ' + err.message;
+        btStatus.className = 'text-xs font-bold text-red-500';
+      }
+    }
+
+    async function kirimKePrinter() {
+      const btStatus = document.getElementById('btStatus');
+      const progressBox = document.getElementById('progressBox');
+      const progressBar = document.getElementById('progressBar');
+      const progressText = document.getElementById('progressText');
+
+      if (!printCharacteristic) return alert('Printer belum terhubung!');
+      progressBox.classList.remove('hidden');
+      btStatus.innerText = 'Merender Gambar...';
+
+      try {
+        const element = document.getElementById('renderOffscreen');
+        const canvas = await html2canvas(element, { scale: 1.0, width: 576, height: 384, backgroundColor: '#ffffff' });
+        const escpos = await rasterizeToGSv0_Optimized(canvas);
+
+        btStatus.innerText = 'Mencetak...';
+        const chunkSize = 180; 
+        
+        for (let i = 0; i < escpos.length; i += chunkSize) {
+          const chunk = escpos.slice(i, i + chunkSize);
+          if (printCharacteristic.properties.writeWithoutResponse) {
+            await printCharacteristic.writeValueWithoutResponse(chunk);
+          } else {
+            await printCharacteristic.writeValue(chunk);
+          }
+          let percent = Math.min(100, Math.round(((i + chunkSize) / escpos.length) * 100));
+          progressBar.style.width = percent + '%';
+          progressText.innerText = 'Mencetak... ' + percent + '%';
+          await new Promise(r => setTimeout(r, 12));
+        }
+        
+        btStatus.innerText = 'Berhasil dicetak ✓';
+        btStatus.className = 'text-xs font-bold text-green-600';
+        setTimeout(() => { progressBox.classList.add('hidden'); }, 2000);
+      } catch (err) {
+        alert('Gagal Mencetak: ' + err.message);
+        btStatus.innerText = 'Gagal mencetak';
+      }
+    }
+
+    async function rasterizeToGSv0_Optimized(canvas) {
+      const ctx = canvas.getContext('2d');
+      const width = 576;
+      const height = 384; 
+      const imgData = ctx.getImageData(0, 0, width, height);
+      const data = imgData.data;
+
+      const xBytes = 72;
+      const xL = 72;
+      const xH = 0;
+      const yL = height & 0xFF;
+      const yH = (height >> 8) & 0xFF;
+
+      let bytes = [0x1B, 0x40];
+      bytes.push(0x1D, 0x76, 0x30, 0x00, xL, xH, yL, yH);
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < xBytes; x++) {
+          let b = 0;
+          for (let k = 0; k < 8; k++) {
+            const px = (x * 8) + k;
+            const idx = (y * width + px) * 4;
+            const brightness = (data[idx] + data[idx+1] + data[idx+2]) / 3;
+            if (data[idx+3] > 128 && brightness < 128) {
+              b |= (1 << (7 - k));
+            }
+          }
+          bytes.push(b);
+        }
+      }
+      bytes.push(0x0A, 0x0A, 0x0A);
+      return new Uint8Array(bytes);
+    }
+  </script>
+</body>
+</html>
