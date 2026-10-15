@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Reprint AWB (Text Header & Auto-Height)</title>
+  <title>Reprint AWB (Perfect Alignment)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
@@ -33,10 +33,10 @@
 
   <!-- RENDER AREA KHUSUS PRINTER -->
   <div id="renderOffscreen">
-    <!-- Header Text Murni Tanpa Logo Lingkaran (Ukuran Diperbesar) -->
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 8px;">
-      <span style="font-size: 32px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; color: #000; letter-spacing: 1px;">anteraja</span>
-      <span style="font-size: 16px; font-family: monospace; font-weight: bold; color: #000;">☎ 021-5066 3333</span>
+    <!-- Header: Menggunakan position absolute bottom agar teks sejajar sempurna di atas garis -->
+    <div style="position: relative; width: 100%; height: 45px; border-bottom: 4px solid #000; padding-bottom: 4px;">
+      <span style="position: absolute; left: 0; bottom: 4px; font-size: 34px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; color: #000; letter-spacing: 1px; line-height: 1;">anteraja</span>
+      <span style="position: absolute; right: 0; bottom: 4px; font-size: 16px; font-family: monospace; font-weight: bold; color: #000; line-height: 1;">☎ 021-5066 3333</span>
     </div>
 
     <div style="text-align: center; display: flex; flex-direction: column; align-items: center; margin: 4px 0;">
@@ -90,10 +90,10 @@
     <div id="previewWrapper" class="flex flex-col gap-4 hidden">
       <!-- TAMPILAN LABEL UI -->
       <div class="bg-white text-black p-3 rounded-lg w-full flex flex-col gap-2 border border-gray-300">
-        <div class="flex justify-between items-center border-b-2 border-black pb-2">
-          <!-- Text anteraja pada UI juga dibesarkan menjadi text-2xl -->
-          <span class="font-bold text-2xl text-black tracking-wide" style="font-family: Arial, sans-serif;">anteraja</span>
-          <span class="text-xs font-mono font-bold text-black">021-5066 3333</span>
+        <!-- Diperbaiki menggunakan items-end agar teks sejajar di bagian bawah -->
+        <div class="flex justify-between items-end border-b-2 border-black pb-1">
+          <span class="font-bold text-2xl text-black tracking-wide leading-none" style="font-family: Arial, sans-serif;">anteraja</span>
+          <span class="text-xs font-mono font-bold text-black leading-none">021-5066 3333</span>
         </div>
         <div class="text-center my-1">
           <svg id="barcodeCanvasUI" class="max-w-full mx-auto"></svg>
