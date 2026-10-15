@@ -14,7 +14,6 @@
     .input-dark { background-color: #121224; border: 1px solid #d946ef; color: #ffffff; }
     .btn-pink { background: linear-gradient(135deg, #d946ef 0%, #ec4899 100%); }
     
-    /* Perbaikan 1: Tinggi dibuat otomatis menyesuaikan isi, tidak di-lock di 384px */
     #renderOffscreen {
       position: absolute;
       top: -9999px;
@@ -26,7 +25,7 @@
       padding: 14px 14px 20px 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px; /* Jarak dibuat natural, tidak dipaksa ke ujung kertas */
+      gap: 12px; 
     }
   </style>
 </head>
@@ -36,8 +35,9 @@
   <div id="renderOffscreen">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; padding-bottom: 6px;">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <div style="width: 22px; height: 22px; border-radius: 50%; background-color: #d946ef;"></div>
-        <span style="font-weight: 900; font-size: 26px; color: #d946ef;">anteraja</span>
+        <!-- Logo lingkaran dan teks diubah menjadi Hitam -->
+        <div style="width: 22px; height: 22px; border-radius: 50%; background-color: #000000;"></div>
+        <span style="font-weight: 900; font-size: 26px; color: #000000;">anteraja</span>
       </div>
       <span style="font-size: 15px; font-family: monospace; font-weight: bold; color: #000;">☎ 021-5066 3333</span>
     </div>
@@ -94,7 +94,8 @@
       <!-- TAMPILAN LABEL UI -->
       <div class="bg-white text-black p-3 rounded-lg w-full flex flex-col gap-2 border border-gray-300">
         <div class="flex justify-between items-center border-b-2 border-black pb-1">
-          <span class="font-black text-lg text-pink-600">anteraja</span>
+          <!-- Teks anteraja pada Preview UI juga diubah menjadi Hitam (text-black) -->
+          <span class="font-black text-lg text-black">anteraja</span>
           <span class="text-xs font-mono font-bold">021-5066 3333</span>
         </div>
         <div class="text-center my-1">
@@ -230,7 +231,6 @@
       try {
         const element = document.getElementById('renderOffscreen');
         
-        // Perbaikan 2: Tidak memaksa height ke 384px. Membiarkan html2canvas mengukur tinggi aslinya secara dinamis.
         const canvas = await html2canvas(element, { scale: 1.0, width: 576, backgroundColor: '#ffffff' });
         
         const escpos = await rasterizeToGSv0_Optimized(canvas);
@@ -266,7 +266,7 @@
     async function rasterizeToGSv0_Optimized(canvas) {
       const ctx = canvas.getContext('2d');
       const width = canvas.width;
-      const height = canvas.height; // Perbaikan 3: Menggunakan tinggi dinamis berdasarkan isi
+      const height = canvas.height;
       
       const imgData = ctx.getImageData(0, 0, width, height);
       const data = imgData.data;
@@ -277,7 +277,7 @@
       const yL = height & 0xFF;
       const yH = (height >> 8) & 0xFF;
 
-      let bytes = [0x1B, 0x40]; // Reset printer
+      let bytes = [0x1B, 0x40]; 
       bytes.push(0x1D, 0x76, 0x30, 0x00, xL, xH, yL, yH);
 
       for (let y = 0; y < height; y++) {
@@ -294,9 +294,10 @@
           bytes.push(b);
         }
       }
-      bytes.push(0x0A, 0x0A, 0x0A); // Feed line
+      bytes.push(0x0A, 0x0A, 0x0A); 
       return new Uint8Array(bytes);
     }
   </script>
 </body>
-</html>
+      </html>
+      
