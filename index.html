@@ -3,15 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Reprint AWB (Fix Kamera & Font Arial)</title>
+  <title>Reprint AWB (Force Google Fonts)</title>
+  
+  <!-- MEMAKSA DOWNLOAD FONT ROBOTO DARI GOOGLE -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <!-- Link library scanner diganti ke CDNJS yang lebih stabil -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
   <style>
-    /* Mengunci font dasar ke Arial/Helvetica */
-    body { background-color: #0f0f1a; color: #ffffff; font-family: Arial, Helvetica, sans-serif; }
+    /* Mengunci font dasar menggunakan Roboto dari Google Fonts */
+    body { background-color: #0f0f1a; color: #ffffff; font-family: 'Roboto', sans-serif !important; }
     .card-dark { background-color: #1a1a2e; border: 1px solid #2a2a4a; }
     .input-dark { background-color: #121224; border: 1px solid #d946ef; color: #ffffff; }
     .btn-pink { background: linear-gradient(135deg, #d946ef 0%, #ec4899 100%); }
@@ -30,9 +36,9 @@
       gap: 0px; 
     }
 
-    /* Memaksa SEMUA teks di dalam area cetak menjadi Arial/Helvetica */
-    #renderOffscreen * {
-      font-family: Arial, Helvetica, sans-serif !important;
+    /* Memaksa SEMUA teks di dalam area cetak menjadi Roboto */
+    #renderOffscreen, #renderOffscreen * {
+      font-family: 'Roboto', sans-serif !important;
     }
   </style>
 </head>
@@ -40,7 +46,7 @@
 
   <!-- RENDER AREA KHUSUS PRINTER -->
   <div id="renderOffscreen">
-    <!-- Header Atas: Padding bawah diperbesar -->
+    <!-- Header Atas -->
     <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #000; padding-bottom: 12px; margin-bottom: 10px;">
       <span style="font-size: 32px; font-weight: bold; color: #000; letter-spacing: 1px; line-height: 1;">Anteraja</span>
       <span style="font-size: 18px; font-weight: bold; color: #000; line-height: 1;">☎ 021-5066 3333</span>
@@ -52,7 +58,7 @@
       <div id="offResi" style="font-size: 18px; font-weight: bold; margin-top: 4px;"></div>
     </div>
 
-    <!-- Kode UZ: Padding Ekstra agar area aman dari garis -->
+    <!-- Kode UZ -->
     <div id="uzContainerOff" style="text-align: center; border-bottom: 4px solid #000; padding-bottom: 25px; margin-bottom: 15px;">
       <div id="offKodeUz" style="display: inline-block; font-size: 58px; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; line-height: 1; color: #000;"></div>
     </div>
@@ -143,22 +149,15 @@
     let printCharacteristic = null;
     let html5QrcodeScanner = null;
 
-    // FUNGSI SCANNER YANG DIPERBARUI (Lebih Kuat & Tahan Error)
     function startScanMain() { 
       const readerEl = document.getElementById('readerMain');
       readerEl.classList.remove('hidden');
-
-      // Jika scanner sudah aktif sebelumnya, matikan dulu paksa lalu nyalakan lagi
       if (html5QrcodeScanner) {
         html5QrcodeScanner.stop().then(() => {
           html5QrcodeScanner.clear();
           initializeScanner();
-        }).catch(() => {
-          initializeScanner(); // Tetap paksa nyala jika error stop
-        });
-      } else {
-        initializeScanner();
-      }
+        }).catch(() => { initializeScanner(); });
+      } else { initializeScanner(); }
     }
 
     function initializeScanner() {
@@ -171,11 +170,9 @@
           stopScan(); 
           generatePreview(); 
         },
-        (errorMessage) => {
-          // Abaikan pesan error background yang normal terjadi saat mencari fokus
-        }
+        (errorMessage) => {}
       ).catch(err => {
-        alert("Gagal membuka kamera. Pastikan izin kamera aktif dan tidak sedang digunakan aplikasi lain.");
+        alert("Gagal membuka kamera. Pastikan izin kamera aktif.");
         document.getElementById('readerMain').classList.add('hidden');
       });
     }
@@ -186,13 +183,10 @@
           html5QrcodeScanner.clear();
           document.getElementById('readerMain').classList.add('hidden');
           html5QrcodeScanner = null;
-        }).catch(e => {
-          document.getElementById('readerMain').classList.add('hidden');
-        });
+        }).catch(e => { document.getElementById('readerMain').classList.add('hidden'); });
       }
     }
 
-    // Fungsi Render Label
     function generatePreview() {
       const resi = document.getElementById('noResi').value.trim();
       const uz = document.getElementById('kodeUz').value.trim();
@@ -229,7 +223,6 @@
       document.getElementById('previewWrapper').classList.remove('hidden');
     }
 
-    // Fungsi Bluetooth & Printer
     async function connectBluetooth() {
       const btStatus = document.getElementById('btStatus');
       btStatus.innerText = 'Mencari printer...';
@@ -269,8 +262,10 @@
       btStatus.innerText = 'Merender Label...';
 
       try {
+        // Menunggu Google Fonts selesai dimuat sebelum menggambar kanvas
+        await document.fonts.ready;
+
         const element = document.getElementById('renderOffscreen');
-        
         const canvas = await html2canvas(element, { scale: 1.0, width: 576, backgroundColor: '#ffffff' });
         
         const escpos = await rasterizeToGSv0_Optimized(canvas);
@@ -280,17 +275,14 @@
         const chunkSize = 64; 
         for (let i = 0; i < escpos.length; i += chunkSize) {
           const chunk = escpos.slice(i, i + chunkSize);
-          
           if (printCharacteristic.properties.write) {
             await printCharacteristic.writeValue(chunk);
           } else {
             await printCharacteristic.writeValueWithoutResponse(chunk);
           }
-          
           let percent = Math.min(100, Math.round(((i + chunkSize) / escpos.length) * 100));
           progressBar.style.width = percent + '%';
           progressText.innerText = 'Mencetak... ' + percent + '%';
-          
           await new Promise(r => setTimeout(r, 25));
         }
         
@@ -307,7 +299,6 @@
       const ctx = canvas.getContext('2d');
       const width = canvas.width;
       const height = canvas.height;
-      
       const imgData = ctx.getImageData(0, 0, width, height);
       const data = imgData.data;
 
@@ -339,5 +330,4 @@
     }
   </script>
 </body>
-  </html>
-            
+</html>
