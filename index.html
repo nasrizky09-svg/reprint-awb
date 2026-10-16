@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Reprint AWB (Sans-Serif & Anteraja)</title>
+  <title>Reprint AWB (Force Arial Sans-Serif)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    body { background-color: #0f0f1a; color: #ffffff; font-family: -apple-system, sans-serif; }
+    /* Mengunci font dasar ke Arial/Helvetica */
+    body { background-color: #0f0f1a; color: #ffffff; font-family: Arial, Helvetica, sans-serif; }
     .card-dark { background-color: #1a1a2e; border: 1px solid #2a2a4a; }
     .input-dark { background-color: #121224; border: 1px solid #d946ef; color: #ffffff; }
     .btn-pink { background: linear-gradient(135deg, #d946ef 0%, #ec4899 100%); }
@@ -25,7 +26,12 @@
       padding: 16px 14px 20px 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px; 
+      gap: 0px; 
+    }
+
+    /* Memaksa SEMUA teks di dalam area cetak menjadi Arial/Helvetica */
+    #renderOffscreen * {
+      font-family: Arial, Helvetica, sans-serif !important;
     }
   </style>
 </head>
@@ -33,29 +39,25 @@
 
   <!-- RENDER AREA KHUSUS PRINTER -->
   <div id="renderOffscreen">
-    <!-- Header Atas (Anteraja & No Telp menggunakan font Sans-Serif) -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-      <span style="font-size: 32px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; color: #000; letter-spacing: 1px; line-height: 1;">Anteraja</span>
-      <span style="font-size: 18px; font-family: Arial, Helvetica, sans-serif; font-weight: bold; color: #000; line-height: 1;">☎ 021-5066 3333</span>
+    <!-- Header Atas: Padding bawah diperbesar -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #000; padding-bottom: 12px; margin-bottom: 10px;">
+      <span style="font-size: 32px; font-weight: bold; color: #000; letter-spacing: 1px; line-height: 1;">Anteraja</span>
+      <span style="font-size: 18px; font-weight: bold; color: #000; line-height: 1;">☎ 021-5066 3333</span>
     </div>
-    <!-- Garis Pemisah Header -->
-    <div style="width: 100%; height: 4px; background-color: #000000; margin-top: 6px; margin-bottom: 2px;"></div>
 
     <!-- Barcode & Nomor Resi -->
-    <div style="text-align: center; display: flex; flex-direction: column; align-items: center; margin: 2px 0;">
+    <div style="text-align: center; display: flex; flex-direction: column; align-items: center; margin-bottom: 15px;">
       <svg id="barcodeCanvasOffscreen" style="max-width: 100%;"></svg>
-      <div id="offResi" style="font-size: 18px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; margin-top: 4px;"></div>
+      <div id="offResi" style="font-size: 18px; font-weight: bold; margin-top: 4px;"></div>
     </div>
 
-    <!-- Kode UZ (Blok Terpisah agar tidak terkena garis) -->
-    <div id="uzContainerOff" style="text-align: center; display: flex; flex-direction: column; align-items: center;">
-      <div id="offKodeUz" style="font-size: 58px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; letter-spacing: 3px; text-transform: uppercase; line-height: 1; color: #000;"></div>
-      <!-- Garis Hitam di bawah UZ (Terpisah total dari teks) -->
-      <div style="width: 100%; height: 4px; background-color: #000000; margin-top: 8px; margin-bottom: 4px;"></div>
+    <!-- Kode UZ: Padding Ekstra agar area aman dari garis -->
+    <div id="uzContainerOff" style="text-align: center; border-bottom: 4px solid #000; padding-bottom: 25px; margin-bottom: 15px;">
+      <div id="offKodeUz" style="display: inline-block; font-size: 58px; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; line-height: 1; color: #000;"></div>
     </div>
 
-    <!-- Alamat Tujuan (Font 20px Sans-Serif) -->
-    <div id="offAlamat" style="padding-top: 4px; font-size: 20px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; text-transform: uppercase; text-align: center; word-break: break-word; line-height: 1.2; color: #000;"></div>
+    <!-- Alamat Tujuan -->
+    <div id="offAlamat" style="font-size: 20px; font-weight: bold; text-transform: uppercase; text-align: center; word-break: break-word; line-height: 1.2; color: #000;"></div>
   </div>
 
   <!-- TAMPILAN UTAMA HP -->
@@ -96,24 +98,22 @@
     
     <div id="previewWrapper" class="flex flex-col gap-4 hidden">
       <!-- TAMPILAN LABEL UI -->
-      <div class="bg-white text-black p-3 rounded-lg w-full flex flex-col gap-2 border border-gray-300">
-        <div class="flex justify-between items-center">
-          <span class="font-bold text-2xl text-black tracking-wide" style="font-family: Arial, sans-serif;">Anteraja</span>
-          <span class="text-sm font-bold text-black" style="font-family: Arial, sans-serif;">021-5066 3333</span>
+      <div class="bg-white text-black p-3 rounded-lg w-full flex flex-col border border-gray-300">
+        <div class="flex justify-between items-center border-b-2 border-black pb-2 mb-2">
+          <span class="font-bold text-2xl text-black tracking-wide">Anteraja</span>
+          <span class="text-sm font-bold text-black">021-5066 3333</span>
         </div>
-        <div class="w-full h-1 bg-black rounded-full mb-1"></div>
         
         <div class="text-center my-1">
           <svg id="barcodeCanvasUI" class="max-w-full mx-auto"></svg>
-          <div id="dispResiUI" class="text-xs font-bold mt-1 text-black" style="font-family: Arial, sans-serif;"></div>
+          <div id="dispResiUI" class="text-xs font-bold mt-1 text-black"></div>
         </div>
         
-        <div class="text-center" id="uzContainerUI">
-          <div id="dispKodeUzUI" class="text-4xl font-bold uppercase text-black" style="font-family: Arial, sans-serif;"></div>
-          <div class="w-full h-1 bg-black rounded-full my-2"></div>
+        <div class="text-center border-b-2 border-black pb-3 mb-2 mt-2" id="uzContainerUI">
+          <div id="dispKodeUzUI" class="text-4xl font-bold uppercase text-black"></div>
         </div>
         
-        <div id="dispAlamatUI" class="pt-1 text-sm font-bold uppercase text-center truncate text-black" style="font-family: Arial, sans-serif;"></div>
+        <div id="dispAlamatUI" class="text-sm font-bold uppercase text-center truncate text-black"></div>
       </div>
 
       <!-- KONTROL BLUETOOTH PRINTER -->
@@ -215,94 +215,5 @@
           if (printCharacteristic) break;
         }
         if (printCharacteristic) {
-          btStatus.innerText = 'Terhubung: ' + (printDevice.name || 'Printer');
-          btStatus.className = 'text-xs font-bold text-green-400 truncate';
-        } else throw new Error('Karakteristik tidak ditemukan.');
-      } catch (err) {
-        btStatus.innerText = 'Gagal: ' + err.message;
-        btStatus.className = 'text-xs font-bold text-red-400 truncate';
-      }
-    }
-
-    async function kirimKePrinter() {
-      const btStatus = document.getElementById('btStatus');
-      const progressBox = document.getElementById('progressBox');
-      const progressBar = document.getElementById('progressBar');
-      const progressText = document.getElementById('progressText');
-
-      if (!printCharacteristic) return alert('Printer belum terhubung! Silakan klik Sambungkan Printer.');
-      progressBox.classList.remove('hidden');
-      btStatus.innerText = 'Merender Label...';
-
-      try {
-        const element = document.getElementById('renderOffscreen');
-        
-        const canvas = await html2canvas(element, { scale: 1.0, width: 576, backgroundColor: '#ffffff' });
-        
-        const escpos = await rasterizeToGSv0_Optimized(canvas);
-
-        btStatus.innerText = 'Mencetak...';
-        
-        const chunkSize = 64; 
-        for (let i = 0; i < escpos.length; i += chunkSize) {
-          const chunk = escpos.slice(i, i + chunkSize);
-          
-          if (printCharacteristic.properties.write) {
-            await printCharacteristic.writeValue(chunk);
-          } else {
-            await printCharacteristic.writeValueWithoutResponse(chunk);
-          }
-          
-          let percent = Math.min(100, Math.round(((i + chunkSize) / escpos.length) * 100));
-          progressBar.style.width = percent + '%';
-          progressText.innerText = 'Mencetak... ' + percent + '%';
-          
-          await new Promise(r => setTimeout(r, 25));
-        }
-        
-        btStatus.innerText = 'Berhasil dicetak ✓';
-        btStatus.className = 'text-xs font-bold text-green-400 truncate';
-        setTimeout(() => { progressBox.classList.add('hidden'); }, 2000);
-      } catch (err) {
-        alert('Gagal Mencetak: ' + err.message);
-        btStatus.innerText = 'Gagal mencetak';
-      }
-    }
-
-    async function rasterizeToGSv0_Optimized(canvas) {
-      const ctx = canvas.getContext('2d');
-      const width = canvas.width;
-      const height = canvas.height;
-      
-      const imgData = ctx.getImageData(0, 0, width, height);
-      const data = imgData.data;
-
-      const xBytes = 72;
-      const xL = 72;
-      const xH = 0;
-      const yL = height & 0xFF;
-      const yH = (height >> 8) & 0xFF;
-
-      let bytes = [0x1B, 0x40]; 
-      bytes.push(0x1D, 0x76, 0x30, 0x00, xL, xH, yL, yH);
-
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < xBytes; x++) {
-          let b = 0;
-          for (let k = 0; k < 8; k++) {
-            const px = (x * 8) + k;
-            const idx = (y * width + px) * 4;
-            const brightness = (data[idx] + data[idx+1] + data[idx+2]) / 3;
-            if (data[idx+3] > 128 && brightness < 128) {
-              b |= (1 << (7 - k));
-            }
-          }
-          bytes.push(b);
-        }
-      }
-      bytes.push(0x0A, 0x0A, 0x0A); 
-      return new Uint8Array(bytes);
-    }
-  </script>
-</body>
-</html>
+          btStatus.innerText = 'Terhubung: ' +
+  
