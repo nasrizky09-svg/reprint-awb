@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Reprint AWB (Perfect Logo Size)</title>
+  <title>Reprint AWB (Sans-Serif & Anteraja)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
@@ -33,27 +33,29 @@
 
   <!-- RENDER AREA KHUSUS PRINTER -->
   <div id="renderOffscreen">
-    <!-- BLOK 1: Tulisan anteraja diperbesar jadi 32px, No Telp 18px -->
+    <!-- Header Atas (Anteraja & No Telp menggunakan font Sans-Serif) -->
     <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-      <span style="font-size: 32px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; color: #000; letter-spacing: 1px; line-height: 1;">anteraja</span>
-      <span style="font-size: 18px; font-family: monospace; font-weight: bold; color: #000; line-height: 1;">☎ 021-5066 3333</span>
+      <span style="font-size: 32px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; color: #000; letter-spacing: 1px; line-height: 1;">Anteraja</span>
+      <span style="font-size: 18px; font-family: Arial, Helvetica, sans-serif; font-weight: bold; color: #000; line-height: 1;">☎ 021-5066 3333</span>
     </div>
-    <!-- BLOK 2: Garis Hitam Terpisah -->
+    <!-- Garis Pemisah Header -->
     <div style="width: 100%; height: 4px; background-color: #000000; margin-top: 6px; margin-bottom: 2px;"></div>
 
-    <!-- Barcode & Nomor Resi (18px) -->
+    <!-- Barcode & Nomor Resi -->
     <div style="text-align: center; display: flex; flex-direction: column; align-items: center; margin: 2px 0;">
       <svg id="barcodeCanvasOffscreen" style="max-width: 100%;"></svg>
-      <div id="offResi" style="font-size: 18px; font-weight: bold; font-family: monospace; margin-top: 4px;"></div>
+      <div id="offResi" style="font-size: 18px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; margin-top: 4px;"></div>
     </div>
 
-    <!-- Kode UZ -->
-    <div id="uzContainerOff" style="text-align: center;">
+    <!-- Kode UZ (Blok Terpisah agar tidak terkena garis) -->
+    <div id="uzContainerOff" style="text-align: center; display: flex; flex-direction: column; align-items: center;">
       <div id="offKodeUz" style="font-size: 58px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; letter-spacing: 3px; text-transform: uppercase; line-height: 1; color: #000;"></div>
+      <!-- Garis Hitam di bawah UZ (Terpisah total dari teks) -->
+      <div style="width: 100%; height: 4px; background-color: #000000; margin-top: 8px; margin-bottom: 4px;"></div>
     </div>
 
-    <!-- Alamat -->
-    <div id="offAlamat" style="border-top: 4px solid #000; padding-top: 8px; font-size: 14px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; text-transform: uppercase; text-align: center; word-break: break-word; line-height: 1.2; color: #000;"></div>
+    <!-- Alamat Tujuan (Font 20px Sans-Serif) -->
+    <div id="offAlamat" style="padding-top: 4px; font-size: 20px; font-weight: bold; font-family: Arial, Helvetica, sans-serif; text-transform: uppercase; text-align: center; word-break: break-word; line-height: 1.2; color: #000;"></div>
   </div>
 
   <!-- TAMPILAN UTAMA HP -->
@@ -96,21 +98,22 @@
       <!-- TAMPILAN LABEL UI -->
       <div class="bg-white text-black p-3 rounded-lg w-full flex flex-col gap-2 border border-gray-300">
         <div class="flex justify-between items-center">
-          <span class="font-bold text-2xl text-black tracking-wide" style="font-family: Arial, sans-serif;">anteraja</span>
-          <span class="text-sm font-mono font-bold text-black">021-5066 3333</span>
+          <span class="font-bold text-2xl text-black tracking-wide" style="font-family: Arial, sans-serif;">Anteraja</span>
+          <span class="text-sm font-bold text-black" style="font-family: Arial, sans-serif;">021-5066 3333</span>
         </div>
         <div class="w-full h-1 bg-black rounded-full mb-1"></div>
         
         <div class="text-center my-1">
           <svg id="barcodeCanvasUI" class="max-w-full mx-auto"></svg>
-          <div id="dispResiUI" class="text-xs font-bold font-mono mt-1 text-black"></div>
+          <div id="dispResiUI" class="text-xs font-bold mt-1 text-black" style="font-family: Arial, sans-serif;"></div>
         </div>
         
         <div class="text-center" id="uzContainerUI">
           <div id="dispKodeUzUI" class="text-4xl font-bold uppercase text-black" style="font-family: Arial, sans-serif;"></div>
+          <div class="w-full h-1 bg-black rounded-full my-2"></div>
         </div>
         
-        <div id="dispAlamatUI" class="border-t-2 border-black pt-2 text-[10px] font-bold uppercase text-center truncate text-black" style="font-family: Arial, sans-serif;"></div>
+        <div id="dispAlamatUI" class="pt-1 text-sm font-bold uppercase text-center truncate text-black" style="font-family: Arial, sans-serif;"></div>
       </div>
 
       <!-- KONTROL BLUETOOTH PRINTER -->
