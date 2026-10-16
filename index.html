@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Reprint AWB (Force Google Fonts)</title>
+  <title>Reprint AWB (Fix Auto-Preview & Font)</title>
   
   <!-- MEMAKSA DOWNLOAD FONT ROBOTO DARI GOOGLE -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -166,9 +166,9 @@
         { facingMode: "environment" }, 
         { fps: 10, qrbox: { width: 250, height: 100 } }, 
         (decodedText) => { 
+          // HANYA MENGISI INPUT DAN MEMATIKAN SCANNER
           document.getElementById('noResi').value = decodedText; 
           stopScan(); 
-          generatePreview(); 
         },
         (errorMessage) => {}
       ).catch(err => {
