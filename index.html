@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Reprint AWB (Fix Auto-Preview & Font)</title>
+  <title>Reprint AWB (Fix Wrap Alamat)</title>
   
   <!-- MEMAKSA DOWNLOAD FONT ROBOTO DARI GOOGLE -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -120,7 +120,8 @@
           <div id="dispKodeUzUI" class="text-4xl font-bold uppercase text-black"></div>
         </div>
         
-        <div id="dispAlamatUI" class="text-sm font-bold uppercase text-center truncate text-black"></div>
+        <!-- Kelas 'truncate' dihapus dan diganti dengan 'break-words' -->
+        <div id="dispAlamatUI" class="text-sm font-bold uppercase text-center break-words text-black"></div>
       </div>
 
       <!-- KONTROL BLUETOOTH PRINTER -->
@@ -166,7 +167,6 @@
         { facingMode: "environment" }, 
         { fps: 10, qrbox: { width: 250, height: 100 } }, 
         (decodedText) => { 
-          // HANYA MENGISI INPUT DAN MEMATIKAN SCANNER
           document.getElementById('noResi').value = decodedText; 
           stopScan(); 
         },
@@ -262,7 +262,6 @@
       btStatus.innerText = 'Merender Label...';
 
       try {
-        // Menunggu Google Fonts selesai dimuat sebelum menggambar kanvas
         await document.fonts.ready;
 
         const element = document.getElementById('renderOffscreen');
@@ -330,4 +329,5 @@
     }
   </script>
 </body>
-</html>
+            </html>
+            
